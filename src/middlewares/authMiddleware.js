@@ -3,25 +3,56 @@ import "dotenv/config";
 
 export const generate_jwt = async (payload) => {
   const jwt_secret = process.env.JWT_SECRET;
-  const token = jwt.sign(payload, jwt_secret);
+
+  if (!jwt_secret) {
+    throw new Error("JWT_SECRET is not configured");
+  }
+
+  const token = jwt.sign(payload, jwt_secret, {
+    expiresIn: "7d",
+  });
+
   return token;
 };
 
 export const auth_middleware = async (req, res, next) => {
-  // check for auth token
-  const auth_token = req.headers["authorization"]?.split(" ")[1];
+  try {
+    const authHeader = req.headers.authorization;
 
-  // console.log("auth header: ", req.headers);
-  if (!auth_token) return res.sendStatus(401);
+    if (!authHeader) {
+      return res.status(401).json({
+        message: "Authorization header is required",
+      });
+    }
 
-  // verify jwt token, decrypt the token and get user_id
-  const jwt_secret = process.env.JWT_SECRET;
-  const user_id = jwt.verify(auth_token, jwt_secret);
-  console.log("user_id: ", user_id);
-  req.user_id = user_id["user_id"];
+    const parts = authHeader.split(" ");
 
-  next();
+    if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
+      return res.status(401).json({
+        message: "Invalid authorization format",
+      });
+    }
+
+    const token = parts[1];
+
+    const jwt_secret = process.env.JWT_SECRET;
+
+    if (!jwt_secret) {
+      return res.status(500).json({
+        message: "JWT secret is not configured",
+      });
+    }
+
+    const decoded = jwt.verify(token, jwt_secret);
+
+    req.user_id = decoded.user_id;
+
+    next();
+  } catch (error) {
+    console.log("[auth_middleware] error:", error.message);
+
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
+  }
 };
-
-// bearer xfahekljlw32iu8349u9
-// ['bearer', 'xfaheklj']

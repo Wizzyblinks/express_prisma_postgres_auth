@@ -1,0 +1,23 @@
+enum BookingStatus {
+    PENDING
+    CONFIRMED
+    CANCELLED
+    COMPLETED
+}
+
+model Booking {
+    id            String        @id @default(uuid())
+    clientId      String
+    serviceId     String?
+    bookingDate   DateTime
+    bookingTime   String?
+    location      String?
+    notes         String?
+    status        BookingStatus  @default(PENDING)
+    paymentStatus String?
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+
+    client  User    @relation(fields: [clientId], references: [id])
+    service Service? @relation(fields: [serviceId], references: [id])
+}

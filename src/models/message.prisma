@@ -1,0 +1,17 @@
+enum MessageStatus {
+    UNREAD
+    READ
+    REPLIED
+}
+
+model Message {
+    id          String        @id @default(uuid())
+    name        String
+    email       String
+    phone       String?
+    subject     String?
+    message     String
+    status      MessageStatus @default(UNREAD)
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @updatedAt
+}
