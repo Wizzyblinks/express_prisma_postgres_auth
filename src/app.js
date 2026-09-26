@@ -10,13 +10,17 @@ import { bookingRoutes } from "./routes/bookingRoutes.js";
 import { messageRoutes } from "./routes/messageRoutes.js";
 import { adminRoutes } from "./routes/adminRoutes.js";
 import cors from "cors";
-
 export const app = express();
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(logger);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // app.use(auth_middleware);
 
 app.use("/users", userRoute);
