@@ -35,27 +35,12 @@ export const register = async (req, res) => {
         name,
         email,
         password: hashedPassword,
-        emailVerified: false,
+        emailVerified: true,
       },
     });
-
-    const otp = generateOTP();
-
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await prisma.emailVerification.create({
-      data: {
-        userId: user.id,
-        otp,
-        expiresAt,
-      },
-    });
-
-    await sendVerificationEmail(user.email, user.name, otp);
 
     return res.status(201).json({
-      message:
-        "Registration successful. A verification code has been sent to your email.",
+      message: "Registration successful.",
       data: {
         id: user.id,
         name: user.name,
@@ -253,12 +238,12 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if the user's email has been verified
-    if (!user.emailVerified) {
-      return res.status(403).json({
-        message: "Please verify your email before logging in",
-      });
-    }
+    // // email verification temporally disabled
+    // if (!user.emailVerified) {
+    //   return res.status(403).json({
+    //     message: "Please verify your email before logging in",
+    //   });
+    // }
 
     const token = await generate_jwt({
       user_id: user.id,
